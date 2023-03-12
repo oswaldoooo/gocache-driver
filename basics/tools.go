@@ -13,7 +13,7 @@ func (s *CacheDB) connect() {
 
 }
 func Pack(msg *Message, checkonline bool, con net.Conn, wrsize int) (resbytes []byte, err error) {
-	var rply *ReplayStatus
+	var rply = new(ReplayStatus)
 	buff := make([]byte, wrsize)
 	if checkonline {
 		sendmes, err := json.Marshal(msg)
