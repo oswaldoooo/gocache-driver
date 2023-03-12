@@ -56,6 +56,14 @@ func (s *CacheDB) GetKeys(keys ...string) ([]string, error) {
 	}
 	return nil, err
 }
+func (s *CacheDB) GetAllKeys() (resmap map[string][]byte, err error) {
+	msg := &Message{DB: s.database, Act: 322}
+	resbytes, err := Pack(msg, s.checkonline, s.connector, 1*GB)
+	if err == nil {
+		err = json.Unmarshal(resbytes, &resmap)
+	}
+	return
+}
 func (s *CacheDB) DeleteKeys(keys ...string) (err error) {
 	msg := &Message{DB: s.database, Key: strings.Join(keys, " "), Act: 33}
 	err = SimplePack(msg, s.checkonline, s.connector)
