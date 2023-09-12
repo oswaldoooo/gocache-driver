@@ -14,7 +14,6 @@ var (
 )
 
 func Pack(msg *Message, checkonline bool, con net.Conn, wrsize int) (resbytes []byte, err error) {
-	fmt.Print("\ncalled buffer size ", wrsize)
 	var rply = new(ReplayStatus)
 	buff := make([]byte, wrsize)
 	if checkonline {
