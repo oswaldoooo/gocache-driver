@@ -4,15 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"strconv"
+	"sync"
 )
 
-func (s *CacheDB) connect() {
-	con, _ := net.Dial("tcp", s.host+":"+strconv.Itoa(s.port))
-	defer con.Close()
+var (
+	CON_ERR = fmt.Errorf("connection error")
+	Erron   = []string{}
+	rwmutex sync.RWMutex //control erron read and write
+)
 
-}
 func Pack(msg *Message, checkonline bool, con net.Conn, wrsize int) (resbytes []byte, err error) {
+	fmt.Print("\ncalled buffer size ", wrsize)
 	var rply = new(ReplayStatus)
 	buff := make([]byte, wrsize)
 	if checkonline {
@@ -34,13 +36,18 @@ func Pack(msg *Message, checkonline bool, con net.Conn, wrsize int) (resbytes []
 							err = fmt.Errorf("unknown status")
 						}
 					}
+				} else {
+					Erron = append(Erron, err.Error())
+					err = CON_ERR
 				}
+			} else {
+				Erron = append(Erron, err.Error())
+				err = CON_ERR
 			}
 		}
 	} else {
 		err = fmt.Errorf("please connect cache first")
 	}
-	buff = make([]byte, 0) //手动释放内存
 	return
 }
 func SimplePack(msg *Message, checkonline bool, con net.Conn) (err error) {

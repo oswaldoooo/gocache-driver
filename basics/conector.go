@@ -14,6 +14,7 @@ type CacheDB struct {
 	database    string
 	checkonline bool
 	connector   net.Conn
+	buffer_size int
 }
 
 const (
@@ -23,7 +24,7 @@ const (
 )
 
 func New(hostname string, port int, passwd, db string) *CacheDB {
-	return &CacheDB{host: hostname, port: port, passwd: passwd, database: db}
+	return &CacheDB{host: hostname, port: port, passwd: passwd, database: db, buffer_size: 10 * MB}
 }
 func (s *CacheDB) Connect() error {
 	con, err := net.Dial("tcp", s.host+":"+strconv.Itoa(s.port))
@@ -42,7 +43,7 @@ func (s *CacheDB) SetKey(key, value string) (err error) {
 }
 func (s *CacheDB) GetKeys(keys ...string) ([]string, error) {
 	msg := &Message{DB: s.database, Key: strings.Join(keys, " "), Act: 32}
-	resbytes, err := Pack(msg, s.checkonline, s.connector, 1*GB)
+	resbytes, err := Pack(msg, s.checkonline, s.connector, s.buffer_size)
 	if err == nil {
 		var restr []string
 		err = json.Unmarshal(resbytes, &restr)
@@ -58,7 +59,7 @@ func (s *CacheDB) GetKeys(keys ...string) ([]string, error) {
 }
 func (s *CacheDB) GetKeysContain(subkey string) (resmap map[string][]byte, err error) {
 	msg := &Message{Act: 341, DB: s.database, Key: subkey}
-	resbytes, err := Pack(msg, s.checkonline, s.connector, 1*GB)
+	resbytes, err := Pack(msg, s.checkonline, s.connector, s.buffer_size)
 	if err == nil {
 		err = json.Unmarshal(resbytes, &resmap)
 	}
@@ -66,7 +67,7 @@ func (s *CacheDB) GetKeysContain(subkey string) (resmap map[string][]byte, err e
 }
 func (s *CacheDB) GetAllKeys() (resmap map[string][]byte, err error) {
 	msg := &Message{DB: s.database, Act: 322}
-	resbytes, err := Pack(msg, s.checkonline, s.connector, 1*GB)
+	resbytes, err := Pack(msg, s.checkonline, s.connector, s.buffer_size)
 	if err == nil {
 		err = json.Unmarshal(resbytes, &resmap)
 	}
