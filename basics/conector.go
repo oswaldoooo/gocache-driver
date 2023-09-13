@@ -2,6 +2,7 @@ package driver_tools
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 	"strconv"
 	"strings"
@@ -39,6 +40,20 @@ func (s *CacheDB) Connect() error {
 func (s *CacheDB) SetKey(key, value string) (err error) {
 	msg := &Message{DB: s.database, Key: key, Value: []byte(value), Act: 31}
 	err = SimplePack(msg, s.checkonline, s.connector)
+	return
+}
+
+func (s *CacheDB) CompareAndSetKey(key, value string) (version uint32, err error) {
+	msg := &Message{DB: s.database, Key: key, Value: []byte(value), Act: 11}
+	var resbytes []byte
+	resbytes, err = Pack(msg, s.checkonline, s.connector, s.buffer_size)
+	if err == nil {
+		if len(resbytes) == 2 {
+			version = uint32(resbytes[0])*256 + uint32(resbytes[1])
+		} else {
+			err = fmt.Errorf("unknown error,origin datapacket %v", resbytes)
+		}
+	}
 	return
 }
 func (s *CacheDB) GetKeys(keys ...string) ([]string, error) {
