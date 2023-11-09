@@ -12,4 +12,11 @@ type Message struct {
 type ReplayStatus struct {
 	Content    []byte `json:"content"`
 	StatusCode int    `json:"code"`
+	Type       string `json:"type"`
+}
+
+type Connector interface {
+	Connect() error
+	Ping() error
+	Close() error
 }
